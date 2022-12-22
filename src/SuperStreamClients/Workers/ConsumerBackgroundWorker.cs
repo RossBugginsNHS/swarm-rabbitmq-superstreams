@@ -2,10 +2,14 @@ using System.Buffers;
 using System.Text;
 using RabbitMQ.Stream.Client.AMQP;
 using RabbitMQ.Stream.Client.Reliable;
+using System.Diagnostics.Metrics;
 
 namespace SuperStreamClients.Consumers;
 public class ConsumerBackgroundWorker : BackgroundService
 {
+    static Meter s_meter = new Meter("SuperStreamClients.Consumers", "1.0.0");
+    static Counter<int> s_messagesReceived = s_meter.CreateCounter<int>("messages-received-count");
+
     private readonly ILogger<ConsumerBackgroundWorker> _logger;
     private readonly RabbitMqStreamConnectionFactory _systemConnection;
     private readonly IOptions<RabbitMqStreamOptions> _options;
@@ -135,8 +139,17 @@ public class ConsumerBackgroundWorker : BackgroundService
         CancellationToken cancellationToken)
     {
         var receivedMessage = CreateReceivedCustomerMessage(sourceStream, message);
+        UpdateMetrics(receivedMessage.CustomerMessage.CustomerId);
         LogMessageReceived(sourceStream, receivedMessage);
         await PostAnalyticsAndDelay(receivedMessage, cancellationToken);
+    }
+
+    private void UpdateMetrics(int customerId)
+    {
+        s_messagesReceived.Add(
+            1,
+            new KeyValuePair<string,object>("Host", GetHostName()),
+            new KeyValuePair<string,object>("CustomerId", customerId));
     }
 
     private async Task PostAnalyticsAndDelay(ReceivedCustomerMessage receivedMessage, CancellationToken cancellationToken)

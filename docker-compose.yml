@@ -44,6 +44,9 @@ services:
       - Logging__LogLevel__SuperStreamClients.RabbitMqStreamConnectionFactory=Debug
       - Logging__LogLevel__System.Net.Http.HttpClient=Warning
       - DOTNET_ENVIRONMENT=Production
+    ports:
+      - target: 5070
+        published: 5072
     deploy:
       replicas: 2
       restart_policy:
@@ -64,6 +67,9 @@ services:
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__SuperStreamClients.RabbitMqStreamConnectionFactory=Debug
       - DOTNET_ENVIRONMENT=Production
+    ports:
+      - target: 5070
+        published: 5071
     deploy:
       replicas: 1
       restart_policy:

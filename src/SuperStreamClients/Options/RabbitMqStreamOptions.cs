@@ -17,11 +17,12 @@ public class RabbitMqStreamOptions
     public string ConsumerAppReference { get; set; } = "SwarmSuperStreamApp";
     public int ConsumerHandleDelayMin { get; set; } = 100;
     public int ConsumerHandleDelayMax { get; set; } = 1000;
-    public int MaxMessagesToShowInAnalytics {get;set;} = 10;
-    public bool Consumer {get;set;} = true;
-    public bool Producer {get;set;} = true;
-    public bool Analytics {get;set;} = true;
-    public string AnalyticsApi{get;set;}="http://localhost:5070";
-    public TimeSpan AnalyticsRefreshTime {get;set;} = TimeSpan.FromSeconds(5);
-    public TimeSpan RabbitMqConnectionRetryTime {get;set;} = TimeSpan.FromSeconds(5);
+    public int MaxMessagesToShowInAnalytics { get; set; } = 10;
+    public bool Consumer { get; set; } = true;
+    public bool Producer { get; set; } = true;
+    public bool Analytics { get; set; } = true;
+    public string AnalyticsApi { get; set; } = "http://localhost:5070";
+    public TimeSpan AnalyticsRefreshTime { get; set; } = TimeSpan.FromSeconds(5);
+    public TimeSpan RabbitMqConnectionRetryTime { get; set; } = TimeSpan.FromSeconds(5);
+    public bool Metrics { get; set; } = true;
 }

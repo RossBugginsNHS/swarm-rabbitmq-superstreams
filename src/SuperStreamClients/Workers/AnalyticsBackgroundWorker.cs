@@ -1,9 +1,12 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace SuperStreamClients.Analytics;
 
 public class AnalyticsBackgroundWorker : BackgroundService
 {
+
+
     private readonly SuperStreamAnalytics _analytics;
     private readonly ILogger<AnalyticsBackgroundWorker> _logger;
     private readonly IOptions<RabbitMqStreamOptions> _options;

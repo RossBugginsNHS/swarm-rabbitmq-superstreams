@@ -1,11 +1,14 @@
 using System.Text;
 using RabbitMQ.Stream.Client.AMQP;
 using RabbitMQ.Stream.Client.Reliable;
+using System.Diagnostics.Metrics;
 
 namespace SuperStreamClients.Producers;
 
 public class ProducerBackgroundWorker : BackgroundService
 {
+    static Meter s_meter = new Meter("SuperStreamClients.Producers", "1.0.0");
+    static Counter<int> s_messagesSent = s_meter.CreateCounter<int>("messages-sent-count");
     private readonly ILogger<ProducerBackgroundWorker> _logger;
     private readonly RabbitMqStreamConnectionFactory _systemConnection;
     private readonly IOptions<RabbitMqStreamOptions> _options;
@@ -98,9 +101,19 @@ public class ProducerBackgroundWorker : BackgroundService
     private async Task SendMessage(int messageNumber)
     {
         var options = _options.Value;
-        var message = CreateMessage(messageNumber, options);
+        var customerId = _random.Next(0, options.NumberOfCustomers);
+        var message = CreateMessage(messageNumber,customerId, options);
         await _producer.Send(message);
+        UpdateMetrics(customerId);
         _logger.LogInformation("Written Message {messageNumber}", messageNumber);
+    }
+
+        private void UpdateMetrics(int customerId)
+    {
+        s_messagesSent.Add(
+            1,
+            new KeyValuePair<string,object>("Host", GetHostName()),
+            new KeyValuePair<string,object>("CustomerId", customerId));
     }
 
     private async Task DelayNextSend(RabbitMqStreamOptions options, CancellationToken cancellationToken)
@@ -117,9 +130,9 @@ public class ProducerBackgroundWorker : BackgroundService
         }
     }
 
-    private Message CreateMessage(int messageNumber, RabbitMqStreamOptions options)
+    private Message CreateMessage(int messageNumber, int customerId, RabbitMqStreamOptions options)
     {
-        var customerId = _random.Next(0, options.NumberOfCustomers);
+        
         var orderId = Guid.NewGuid();
         var message = new Message(SerializeProducedMessage(messageNumber, customerId, orderId))
         {

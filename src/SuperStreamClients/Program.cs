@@ -12,14 +12,16 @@ builder.Services.AddSwarmSuperStream(
     });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+var options = app.Services.GetService<IOptions<RabbitMqStreamOptions>>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (options.Value.Metrics)
+    app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
+if (options.Value.Analytics && app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -29,6 +31,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+if(options.Value.Analytics)
+    app.MapControllers();
 
 app.Run();
